@@ -5,120 +5,120 @@ from wordcloud import WordCloud
 import os
 import re
 
-# --- Configuration ---
+# --- Configuración ---
 DATA_FILE = r'modelo-baseline\data\raw\challenge_data-18-ago.csv'
 OUTPUT_DIR = r'modelo-baseline\results\images'
 DOMAINS = ['Cardiovascular', 'Neurological', 'Hepatorenal', 'Oncological']
 
-# --- Helper Functions ---
+# --- Funciones de Ayuda ---
 def clean_text(text):
-    """Basic text cleaning."""
+    """Limpieza básica del texto."""
     if not isinstance(text, str):
         return ""
     text = text.lower()
-    text = re.sub(r'<.*?>', '', text)  # Remove HTML tags
-    text = re.sub(r'[^a-z\s]', '', text) # Remove special characters and numbers
-    text = re.sub(r'\s+', ' ', text).strip() # Remove extra whitespace
+    text = re.sub(r'<.*?>', '', text)  # Eliminar etiquetas HTML
+    text = re.sub(r'[^a-z\s]', '', text) # Eliminar caracteres especiales y números
+    text = re.sub(r'\s+', ' ', text).strip() # Eliminar espacios en blanco adicionales
     return text
 
 def plot_text_length_distribution(df, column_name, output_filename):
-    """Plots and saves the distribution of text length for a given column."""
+    """Grafica y guarda la distribución de la longitud del texto para una columna dada."""
     plt.figure(figsize=(10, 6))
     df[f'{column_name}_length'] = df[column_name].str.len()
     sns.histplot(df[f'{column_name}_length'], bins=50, kde=True)
-    plt.title(f'Distribution of {column_name.capitalize()} Length')
-    plt.xlabel('Length (number of characters)')
-    plt.ylabel('Frequency')
+    plt.title(f'Distribución de la Longitud de {column_name.capitalize()}')
+    plt.xlabel('Longitud (número de caracteres)')
+    plt.ylabel('Frecuencia')
     plt.savefig(os.path.join(OUTPUT_DIR, output_filename))
     plt.close()
-    print(f"Saved {column_name} length distribution plot to {output_filename}")
+    print(f"Gráfico de distribución de longitud de {column_name} guardado en {output_filename}")
 
 def generate_word_cloud(text, output_filename):
-    """Generates and saves a word cloud from a block of text."""
+    """Genera y guarda una nube de palabras a partir de un bloque de texto."""
     wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)
     plt.figure(figsize=(10, 5))
     plt.imshow(wordcloud, interpolation='bilinear')
     plt.axis('off')
     plt.savefig(os.path.join(OUTPUT_DIR, output_filename))
     plt.close()
-    print(f"Saved word cloud to {output_filename}")
+    print(f"Nube de palabras guardada en {output_filename}")
 
-# --- Main EDA Script ---
+# --- Script Principal de EDA ---
 def perform_eda():
-    """Main function to run the Exploratory Data Analysis."""
-    # Create output directory if it doesn't exist
+    """Función principal para ejecutar el Análisis Exploratorio de Datos (EDA)."""
+    # Crear el directorio de salida si no existe
     if not os.path.exists(OUTPUT_DIR):
         os.makedirs(OUTPUT_DIR)
 
-    # 1. Load Data
-    print(f"Loading data from {DATA_FILE}...")
+    # 1. Cargar Datos
+    print(f"Cargando datos desde {DATA_FILE}...")
     try:
-        # Corrected the parser by adding the separator and engine
+        # Se corrigió el analizador agregando el separador y el motor
         df = pd.read_csv(DATA_FILE, sep=';', engine='python', on_bad_lines='warn')
     except FileNotFoundError:
-        print(f"Error: The file {DATA_FILE} was not found in the root directory.")
+        print(f"Error: El archivo {DATA_FILE} no fue encontrado en el directorio raíz.")
         return
 
-    print("\n--- Initial Data Inspection ---")
-    print("Data Head:")
+    print("\n--- Inspección Inicial de Datos ---")
+    print("Encabezado de los Datos:")
     print(df.head())
-    print("\nData Info:")
+    print("\nInformación de los Datos:")
     df.info()
-    print("\nMissing Values:")
+    print("\nValores Faltantes:")
     print(df.isnull().sum())
 
-    # Fill missing abstracts with empty string
+    # Rellenar resúmenes faltantes con una cadena vacía
     df['abstract'] = df['abstract'].fillna('')
 
-    # 2. Analyze Labels (Domains)
-    print("\n--- Domain/Label Analysis ---")
-    # Binarize labels
+    # 2. Analizar Etiquetas (Dominios)
+    print("\n--- Análisis de Dominios/Etiquetas ---")
+    # Binarizar etiquetas
     for domain in DOMAINS:
         df[domain] = df['group'].apply(lambda x: 1 if domain.lower() in x.lower() else 0)
 
     label_counts = df[DOMAINS].sum().sort_values(ascending=False)
-    print("\nArticle counts per single domain:")
+    print("\nConteo de artículos por dominio único:")
     print(label_counts)
 
-    # Plot label distribution
+    # Graficar la distribución de etiquetas
     plt.figure(figsize=(10, 6))
     sns.barplot(x=label_counts.index, y=label_counts.values)
-    plt.title('Article Count per Medical Domain')
-    plt.ylabel('Number of Articles')
-    plt.xlabel('Domain')
+    plt.title('Conteo de Artículos por Dominio Médico')
+    plt.ylabel('Número de Artículos')
+    plt.xlabel('Dominio')
     plt.savefig(os.path.join(OUTPUT_DIR, 'domain_distribution.png'))
     plt.close()
-    print("Saved domain distribution plot to domain_distribution.png")
+    print("Gráfico de distribución de dominios guardado en domain_distribution.png")
 
-    # Analyze label combinations
+    # Analizar combinaciones de etiquetas
     df['domain_combination'] = df[DOMAINS].apply(lambda row: '|'.join(row.index[row == 1]), axis=1)
     combo_counts = df['domain_combination'].value_counts()
-    print("\nArticle counts per domain combination:")
+    print("\nConteo de artículos por combinación de dominios:")
     print(combo_counts)
 
-    # 3. Analyze Text Length
-    print("\n--- Text Length Analysis ---")
+    # 3. Analizar Longitud del Texto
+    print("\n--- Análisis de Longitud del Texto ---")
     df['text'] = df['title'] + ' ' + df['abstract']
     plot_text_length_distribution(df, 'title', 'title_length_dist.png')
     plot_text_length_distribution(df, 'abstract', 'abstract_length_dist.png')
     plot_text_length_distribution(df, 'text', 'full_text_length_dist.png')
 
 
-    # 4. Generate Word Clouds
-    print("\n--- Word Cloud Generation ---")
-    # Clean text for word clouds
+    # 4. Generar Nubes de Palabras
+    print("\n--- Generación de Nubes de Palabras ---")
+    # Limpiar texto para las nubes de palabras
     df['cleaned_text'] = df['text'].apply(clean_text)
 
     for domain in DOMAINS:
-        print(f"Generating word cloud for {domain}...")
-        # Concatenate all text for the given domain
+        print(f"Generando nube de palabras para {domain}...")
+        # Concatenar todo el texto para el dominio dado
         domain_text = " ".join(df[df[domain] == 1]['cleaned_text'])
         if domain_text:
             generate_word_cloud(domain_text, f'wordcloud_{domain.lower()}.png')
         else:
-            print(f"No text available to generate word cloud for {domain}")
+            print(f"No hay texto disponible para generar la nube de palabras para {domain}")
 
-    print("\nEDA script finished successfully.")
+    print("\nScript de EDA finalizado exitosamente.")
 
 if __name__ == '__main__':
     perform_eda()
