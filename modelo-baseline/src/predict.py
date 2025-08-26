@@ -2,60 +2,60 @@ import joblib
 import os
 from data_preparation import preprocess_text
 
-# --- Configuration ---
-# Get the directory of the current script
+# --- Configuración ---
+# Obtener el directorio del script actual
 script_dir = os.path.dirname(os.path.abspath(__file__))
-# Go up one level to the project root (src -> modelo-baseline)
+# Subir un nivel a la raíz del proyecto (src -> modelo-baseline)
 project_root = os.path.dirname(script_dir)
 
 MODEL_FILE = os.path.join(project_root, 'results', 'models', 'baseline_model.joblib')
 DOMAINS = ['Cardiovascular', 'Neurological', 'Hepatorenal', 'Oncological']
 
-# --- Prediction Function ---
+# --- Función de Predicción ---
 def predict_domains(text: str):
     """
-    Loads the trained model and predicts the domains for a given text.
+    Carga el modelo entrenado y predice los dominios para un texto dado.
 
     Args:
-        text (str): The input text to classify.
+        text (str): El texto de entrada a clasificar.
 
     Returns:
-        dict: A dictionary with the predicted labels and their probabilities.
-              Returns None if the model is not found.
+        dict: Un diccionario con las etiquetas predichas y sus probabilidades.
+              Devuelve None si no se encuentra el modelo.
     """
-    # 1. Load Model
+    # 1. Cargar Modelo
     try:
         pipeline = joblib.load(MODEL_FILE)
     except FileNotFoundError:
-        print(f"Error: Model file not found at {MODEL_FILE}")
-        print("Please run the training script (train_model.py) first.")
+        print(f"Error: Archivo del modelo no encontrado en {MODEL_FILE}")
+        print("Por favor, ejecute primero el script de entrenamiento (train_model.py).")
         return None
 
-    # 2. Preprocess the input text
+    # 2. Preprocesar el texto de entrada
     processed_text = preprocess_text(text)
 
-    # The pipeline expects an iterable (like a list or pandas Series)
+    # El pipeline espera un iterable (como una lista o una Serie de pandas)
     text_to_predict = [processed_text]
 
-    # 3. Make Prediction
-    # Use predict_proba to get probabilities for each class
+    # 3. Realizar Predicción
+    # Usar predict_proba para obtener las probabilidades de cada clase
     probabilities = pipeline.predict_proba(text_to_predict)
 
-    # Use predict to get the binary predictions (0 or 1)
+    # Usar predict para obtener las predicciones binarias (0 o 1)
     predictions = pipeline.predict(text_to_predict)
 
-    # 4. Format the output
-    # The output of predict_proba is a list of arrays, one for each class
-    # We take the first element since we only predict on one sample
-    # The probabilities are for [class_0, class_1] for each label. We want the prob of class 1.
+    # 4. Formatear la salida
+    # La salida de predict_proba es una lista de arrays, uno por cada clase
+    # Tomamos el primer elemento ya que solo predecimos sobre una muestra
+    # Las probabilidades son para [clase_0, clase_1] para cada etiqueta. Queremos la prob de la clase 1.
 
-    # The output of predict is a 2D array, we take the first row
+    # La salida de predict es un array 2D, tomamos la primera fila
     predicted_labels = [DOMAINS[i] for i, prediction in enumerate(predictions[0]) if prediction == 1]
 
-    # Create a dictionary of all domain probabilities
+    # Crear un diccionario de todas las probabilidades de dominio
     domain_probabilities = {}
     for i, domain in enumerate(DOMAINS):
-        # The second column [:, 1] is the probability of the positive class (1)
+        # La segunda columna [:, 1] es la probabilidad de la clase positiva (1)
         domain_probabilities[domain] = probabilities[i][0][1]
 
 
@@ -65,19 +65,19 @@ def predict_domains(text: str):
     }
 
 if __name__ == '__main__':
-    # Example Usage
+    # Ejemplo de Uso
     sample_text = "The study investigated the effects of a new drug on cardiac rhythm in patients with heart failure."
-    print(f"--- Predicting for sample text ---\n'{sample_text}'\n")
+    print(f"--- Prediciendo para el texto de ejemplo ---\n'{sample_text}'\n")
 
-    # This requires the model to be trained first.
-    # We add a check to see if the model exists before running the example.
+    # Esto requiere que el modelo se haya entrenado primero.
+    # Agregamos una verificación para ver si el modelo existe antes de ejecutar el ejemplo.
     if not os.path.exists(MODEL_FILE):
-        print("Model not found. Please train the model by running 'python main.py' in the 'modelo-baseline' directory first.")
+        print("Modelo no encontrado. Por favor, entrene el modelo ejecutando 'python main.py' en el directorio 'modelo-baseline' primero.")
     else:
         results = predict_domains(sample_text)
         if results:
-            print("--- Prediction Results ---")
-            print(f"Predicted Labels: {results['predicted_labels']}")
-            print("\nProbabilities per Domain:")
+            print("--- Resultados de la Predicción ---")
+            print(f"Etiquetas Predichas: {results['predicted_labels']}")
+            print("\nProbabilidades por Dominio:")
             for domain, prob in results['probabilities'].items():
                 print(f"- {domain}: {prob:.4f}")
