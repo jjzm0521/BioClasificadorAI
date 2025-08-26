@@ -28,3 +28,4 @@ wordcloud==1.9.4
 
 #
 streamlit
+accelerate
