@@ -25,3 +25,6 @@ scikit-multilearn==0.2.0
 matplotlib==3.10.5
 seaborn==0.13.2
 wordcloud==1.9.4
+
+#
+streamlit
