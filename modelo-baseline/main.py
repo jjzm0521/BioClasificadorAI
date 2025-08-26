@@ -1,35 +1,50 @@
 import sys
 import os
 
-# Add the 'src' directory to the Python path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+# Agrega el directorio 'src' al path de Python si es necesario
+# sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
+# --- 1. Importa las funciones de cada script ---
+# Asegúrate de que los nombres de las funciones (ej. prepare_data, run_eda)
+# coincidan con los que tienes en tus archivos.
+from data_preparation import prepare_data
+from eda import run_eda
 from train_model import train_baseline
 from evaluate_model import evaluate_model
 
 def main():
     """
-    Main function to run the entire ML pipeline.
-    1. Train the model.
-    2. Evaluate the model.
+    Función principal para correr el pipeline de ML completo.
+    1. Preparar los datos.
+    2. Realizar análisis exploratorio (EDA).
+    3. Entrenar el modelo.
+    4. Evaluar el modelo.
     """
-    print("--- Starting ML Pipeline ---")
+    print("--- Iniciando Pipeline de ML ---")
 
-    # Step 1: Train the model
-    print("\n--- Running Training ---")
+    # Paso 1: Preparación de Datos
+    print("\n--- Ejecutando Preparación de Datos ---")
+    prepare_data()
+
+    # Paso 2: Análisis Exploratorio de Datos (EDA)
+    print("\n--- Ejecutando EDA ---")
+    run_eda()
+
+    # Paso 3: Entrenamiento del modelo
+    print("\n--- Ejecutando Entrenamiento ---")
     train_baseline()
 
-    # Step 2: Evaluate the model
-    print("\n--- Running Evaluation ---")
-    # Check if model and test data exist before evaluating
+    # Paso 4: Evaluación del modelo
+    print("\n--- Ejecutando Evaluación ---")
+    # Se mantiene la verificación de que el modelo y los datos de prueba existan
     model_path = os.path.join(os.path.dirname(__file__), 'results', 'models', 'baseline_model.joblib')
     test_data_path = os.path.join(os.path.dirname(__file__), 'results', 'models', 'test_data.joblib')
     if os.path.exists(model_path) and os.path.exists(test_data_path):
         evaluate_model()
     else:
-        print("Evaluation skipped because model or test data was not found.")
+        print("Evaluación omitida: no se encontró el modelo o los datos de prueba.")
 
-    print("\n--- ML Pipeline Finished ---")
+    print("\n--- Pipeline de ML Finalizado ---")
 
 if __name__ == '__main__':
     main()
