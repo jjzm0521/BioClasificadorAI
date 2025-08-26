@@ -150,7 +150,7 @@ st.subheader("Paso 1: Elige el modelo a utilizar")
 
 model_choice = st.selectbox(
     "Modelo:",
-    ("SciBERT (Fine-Tuneado)", "TF-IDF + SVM Baseline")
+    ("SciBERT Fine-Tuneado (Más preciso)", "TF-IDF + SVM Baseline (Más rápido)")
 )
 st.markdown("---")
 
