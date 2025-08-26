@@ -7,7 +7,7 @@ numpy==1.26.4
 torch
 datasets
 transformers
-optuna
+
 google-generativeai
 python-dotenv
 tqdm
