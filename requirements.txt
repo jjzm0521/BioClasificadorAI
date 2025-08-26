@@ -1,31 +1,35 @@
 # Core Data and ML
-pandas==2.3.2
-scikit-learn==1.7.1
-joblib==1.5.1
-pyarrow==14.0.1
+pandas==2.2.3
+scikit-learn==1.5.2
+joblib==1.4.2
 numpy==1.26.4
-torch
-datasets
-transformers
 
-google-generativeai
-python-dotenv
-tqdm
+# PyTorch y Transformers
+torch==2.3.1
+transformers==4.44.2
+datasets==2.21.0
+accelerate==0.33.0
 
-# Text Processing
-spacy==3.7.5
-scispacy==0.5.5
-# scispaCy model - installed via URL
-en_core_sci_lg @ https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.4/en_core_sci_lg-0.5.4.tar.gz
+# Hugging Face Hub
+huggingface-hub==0.24.6
 
-# Multi-label Learning
-scikit-multilearn==0.2.0
+# Google AI
+google-generativeai==0.7.2
+python-dotenv==1.0.1
+tqdm==4.66.5
 
-# EDA and Visualization
-matplotlib==3.10.5
+# Text Processing - usar versión estable
+spacy>=3.6.0,<3.8.0
+
+# Visualization
+matplotlib==3.8.4
 seaborn==0.13.2
-wordcloud==1.9.4
 
-#
-streamlit
-accelerate
+# Streamlit
+streamlit>=1.37.0
+
+# Forzar uso de wheels precompilados para evitar compilación
+--only-binary=spacy
+--only-binary=torch
+--only-binary=numpy
+--only-binary=pandas
